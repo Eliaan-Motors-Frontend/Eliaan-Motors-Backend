@@ -1,5 +1,7 @@
 const Booking = require('../models/Booking');
 const Car = require('../models/Car');
+const User = require('../models/User');
+const { sendBookingConfirmation, sendBookingReminder } = require('../utils/emailService');
 
 // @desc    Create a booking
 // @route   POST /api/bookings
@@ -64,8 +66,15 @@ const createBooking = async (req, res) => {
       returnLocation: returnLocation || car.location,
       totalAmount,
       specialRequests,
-      paymentMethod
+      paymentMethod,
+      reminderSent: false
     });
+    
+    // Get user for email
+    const user = await User.findById(req.user._id);
+    
+    // Send booking confirmation email
+    await sendBookingConfirmation(booking, user, car);
     
     // Populate booking details
     const populatedBooking = await Booking.findById(booking._id)
@@ -158,6 +167,7 @@ const updateBookingStatus = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this booking' });
     }
     
+    const oldStatus = booking.status;
     booking.status = status;
     
     if (status === 'cancelled') {
@@ -167,6 +177,13 @@ const updateBookingStatus = async (req, res) => {
     }
     
     await booking.save();
+    
+    // Send confirmation email if status changed to confirmed
+    if (oldStatus !== 'confirmed' && status === 'confirmed') {
+      const user = await User.findById(booking.userId);
+      const car = await Car.findById(booking.carId);
+      await sendBookingConfirmation(booking, user, car);
+    }
     
     const updatedBooking = await Booking.findById(booking._id)
       .populate('userId', 'fullName email phone')

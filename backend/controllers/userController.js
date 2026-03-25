@@ -143,6 +143,56 @@ const uploadProfileImage = async (req, res) => {
   }
 };
 
+// @desc    Upload car image (for vendors)
+// @route   POST /api/users/upload-car-image
+// @access  Private/Vendor
+const uploadCarImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image provided' });
+    }
+    
+    console.log('Uploading car image:', req.file.originalname);
+    
+    // Check if user is vendor
+    if (req.user.role !== 'vendor') {
+      return res.status(403).json({ message: 'Access denied. Only vendors can upload car images.' });
+    }
+    
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'car-images',
+          width: 800,
+          height: 600,
+          crop: 'limit',
+          quality: 'auto'
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(req.file.buffer);
+    });
+    
+    console.log('Image uploaded successfully:', result.secure_url);
+    
+    res.json({ 
+      success: true,
+      imageUrl: result.secure_url,
+      publicId: result.public_id
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ 
+      message: 'Upload failed', 
+      error: error.message 
+    });
+  }
+};
+
 // @desc    Get vendor profile
 // @route   GET /api/users/vendor/profile
 // @access  Private/Vendor
@@ -234,6 +284,7 @@ module.exports = {
   updateUserProfile,
   changePassword,
   uploadProfileImage,
+  uploadCarImage,
   getVendorProfile,
   updateVendorProfile,
   deleteAccount

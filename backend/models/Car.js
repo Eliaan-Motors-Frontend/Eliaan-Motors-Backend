@@ -69,8 +69,7 @@ const carSchema = new mongoose.Schema({
     maxlength: 2000
   },
   images: [{
-    type: String,
-    required: true
+    type: String
   }],
   mainImage: {
     type: String,
@@ -111,4 +110,5 @@ const carSchema = new mongoose.Schema({
   }
 });
 
+// Make sure this is the only export
 module.exports = mongoose.model('Car', carSchema);

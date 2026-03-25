@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
 const Car = require('../models/Car');
+const User = require('../models/User');
+const { sendPaymentConfirmation } = require('../utils/emailService');
 
 // @desc    Initialize payment with Paystack
 // @route   POST /api/payments/initialize
@@ -298,6 +300,12 @@ const verifyPayment = async (req, res) => {
         paymentStatus: 'paid',
         status: 'confirmed'
       });
+      
+      // Send payment confirmation email
+      const user = await User.findById(payment.userId);
+      const booking = await Booking.findById(payment.bookingId);
+      const car = await Car.findById(booking.carId);
+      await sendPaymentConfirmation(payment, user, booking, car);
     }
     
     await payment.save();
@@ -467,10 +475,15 @@ const paymentWebhook = async (req, res) => {
         await payment.save();
         
         // Update booking
-        await Booking.findByIdAndUpdate(payment.bookingId, {
+        const booking = await Booking.findByIdAndUpdate(payment.bookingId, {
           paymentStatus: 'paid',
           status: 'confirmed'
-        });
+        }, { new: true });
+        
+        // Send payment confirmation email
+        const user = await User.findById(payment.userId);
+        const car = await Car.findById(booking.carId);
+        await sendPaymentConfirmation(payment, user, booking, car);
       }
     }
     

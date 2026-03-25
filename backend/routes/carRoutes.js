@@ -7,7 +7,8 @@ const {
   updateCar,
   deleteCar,
   getVendorCars,
-  getFeaturedCars
+  getFeaturedCars,
+  advancedSearch  // Import the new function
 } = require('../controllers/carController');
 const { protect, vendor } = require('../middleware/authMiddleware');
 
@@ -15,6 +16,7 @@ const { protect, vendor } = require('../middleware/authMiddleware');
 router.get('/', getCars);
 router.get('/featured', getFeaturedCars);
 router.get('/:id', getCarById);
+router.post('/search', advancedSearch);  // Add advanced search route
 
 // Vendor only routes (protected)
 router.get('/vendor/my-cars', protect, vendor, getVendorCars);

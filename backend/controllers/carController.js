@@ -1,6 +1,9 @@
 const Car = require('../models/Car');
 const cloudinary = require('../config/cloudinary');
 
+console.log('Car model loaded:', typeof Car, Car ? '✅' : '❌');
+console.log('Car.find exists:', typeof Car.find);
+
 // @desc    Get all cars
 // @route   GET /api/cars
 // @access  Public
@@ -162,11 +165,15 @@ const deleteCar = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to delete this car' });
     }
     
-    // Delete images from Cloudinary
+    // Delete images from Cloudinary if they exist
     if (car.images && car.images.length > 0) {
       for (const imageUrl of car.images) {
         const publicId = imageUrl.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(publicId);
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (cloudError) {
+          console.error('Cloudinary delete error:', cloudError);
+        }
       }
     }
     
@@ -187,8 +194,8 @@ const getVendorCars = async (req, res) => {
       .sort('-createdAt');
     res.json(cars);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error in getVendorCars:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -207,6 +214,165 @@ const getFeaturedCars = async (req, res) => {
   }
 };
 
+// @desc    Advanced search cars with multiple filters
+// @route   POST /api/cars/search
+// @access  Public
+const advancedSearch = async (req, res) => {
+  try {
+    const {
+      query,
+      brand,
+      minPrice,
+      maxPrice,
+      transmission,
+      seats,
+      fuelType,
+      location,
+      year,
+      sortBy = 'newest',
+      page = 1,
+      limit = 12
+    } = req.body;
+    
+    let searchQuery = { available: true };
+    
+    // Text search (name, brand, description)
+    if (query && query.trim()) {
+      searchQuery.$or = [
+        { name: { $regex: query, $options: 'i' } },
+        { brand: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } }
+      ];
+    }
+    
+    // Brand filter (multiple brands)
+    if (brand && brand.length > 0) {
+      searchQuery.brand = { $in: brand };
+    }
+    
+    // Location filter
+    if (location && location.trim()) {
+      searchQuery.location = { $regex: location, $options: 'i' };
+    }
+    
+    // Transmission filter
+    if (transmission) {
+      searchQuery.transmission = transmission;
+    }
+    
+    // Seats filter
+    if (seats) {
+      searchQuery.seats = parseInt(seats);
+    }
+    
+    // Fuel type filter
+    if (fuelType) {
+      searchQuery.fuelType = fuelType;
+    }
+    
+    // Year filter
+    if (year) {
+      searchQuery.year = parseInt(year);
+    }
+    
+    // Price range filter
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      searchQuery.pricePerDay = {};
+      if (minPrice !== undefined && minPrice !== null) {
+        searchQuery.pricePerDay.$gte = parseInt(minPrice);
+      }
+      if (maxPrice !== undefined && maxPrice !== null) {
+        searchQuery.pricePerDay.$lte = parseInt(maxPrice);
+      }
+    }
+    
+    // Sorting options
+    let sortOption = {};
+    switch (sortBy) {
+      case 'price_asc':
+        sortOption = { pricePerDay: 1 };
+        break;
+      case 'price_desc':
+        sortOption = { pricePerDay: -1 };
+        break;
+      case 'rating':
+        sortOption = { rating: -1 };
+        break;
+      case 'newest':
+        sortOption = { createdAt: -1 };
+        break;
+      case 'oldest':
+        sortOption = { createdAt: 1 };
+        break;
+      default:
+        sortOption = { createdAt: -1 };
+    }
+    
+    // Pagination
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Execute search
+    const cars = await Car.find(searchQuery)
+      .populate('vendorId', 'fullName businessName businessAddress')
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limitNum);
+    
+    const total = await Car.countDocuments(searchQuery);
+    
+    // Get filter options for UI (distinct values)
+    const [brands, transmissions, fuelTypes, seatsOptions, years, priceStats] = await Promise.all([
+      Car.distinct('brand', { available: true }),
+      Car.distinct('transmission', { available: true }),
+      Car.distinct('fuelType', { available: true }),
+      Car.distinct('seats', { available: true }).sort(),
+      Car.distinct('year', { available: true }).sort(),
+      Car.aggregate([
+        { $match: { available: true } },
+        {
+          $group: {
+            _id: null,
+            minPrice: { $min: '$pricePerDay' },
+            maxPrice: { $max: '$pricePerDay' }
+          }
+        }
+      ])
+    ]);
+    
+    res.json({
+      success: true,
+      cars,
+      pagination: {
+        total,
+        page: pageNum,
+        pages: Math.ceil(total / limitNum),
+        limit: limitNum
+      },
+      filters: {
+        brands: brands.sort(),
+        transmissions,
+        fuelTypes,
+        seats: seatsOptions,
+        years: years.sort((a, b) => b - a),
+        priceRange: {
+          min: priceStats[0]?.minPrice || 0,
+          max: priceStats[0]?.maxPrice || 500
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Advanced search error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Search failed', 
+      error: error.message 
+    });
+  }
+};
+
+// Export all functions
 module.exports = { 
   getCars, 
   getCarById, 
@@ -214,5 +380,6 @@ module.exports = {
   updateCar, 
   deleteCar, 
   getVendorCars,
-  getFeaturedCars
+  getFeaturedCars,
+  advancedSearch
 };
