@@ -1,32 +1,29 @@
 {
   "name": "eliaan-motors-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Car Rental Platform Backend API",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Eliaan-Motors-Frontend/Eliaan-Motors-Backend.git"
-  },
-  "keywords": [],
+  "keywords": [
+    "car-rental",
+    "express",
+    "mongodb",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Eliaan-Motors-Frontend/Eliaan-Motors-Backend/issues"
-  },
-  "homepage": "https://github.com/Eliaan-Motors-Frontend/Eliaan-Motors-Backend#readme",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cloudinary": "^2.9.0",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.3.2",
-    "multer": "^2.1.1"
+    "mongoose": "^7.8.9",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
