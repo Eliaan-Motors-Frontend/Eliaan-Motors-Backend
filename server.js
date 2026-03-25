@@ -48,8 +48,19 @@ app.use(session({
   cookie: { secure: false } // set to true if using https
 }));
 
-// Middleware
-app.use(cors());
+// CORS Middleware - UPDATED to allow frontend URLs
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://eliaan-motors-frontend-updated.onrender.com',
+    'https://eliaan-motors-frontend.onrender.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
