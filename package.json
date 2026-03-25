@@ -8,12 +8,10 @@
     "dev": "nodemon server.js",
     "manage-users": "node backend/utils/manageUsers.js"
   },
-  "keywords": [
-    "car-rental",
-    "express",
-    "mongodb",
-    "api"
-  ],
+  "engines": {
+    "node": "18.x"
+  },
+  "keywords": ["car-rental", "express", "mongodb", "api"],
   "author": "",
   "license": "ISC",
   "dependencies": {
