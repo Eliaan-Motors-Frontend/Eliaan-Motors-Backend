@@ -53,8 +53,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://eliaan-motors-frontend-updated.onrender.com',
-    'https://eliaan-motors-frontend.onrender.com'
+    'https://eliaan-motors-frontend-r8e9.onrender.com'  // Add your new frontend URL
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
