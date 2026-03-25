@@ -15,6 +15,7 @@ const authRoutes = require('./backend/routes/authRoutes');
 const carRoutes = require('./backend/routes/carRoutes');
 const bookingRoutes = require('./backend/routes/bookingRoutes');
 const userRoutes = require('./backend/routes/userRoutes');
+const paymentRoutes = require('./backend/routes/paymentRoutes');
 
 // Connect to database
 connectDB();
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cars', carRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -61,5 +63,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Cloudinary configured with cloud name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+  console.log(`Paystack configured for payments`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
 });
