@@ -12,6 +12,7 @@ const cloudinary = require('./backend/config/cloudinary');
 
 // Import routes
 const authRoutes = require('./backend/routes/authRoutes');
+const carRoutes = require('./backend/routes/carRoutes');
 
 // Connect to database
 connectDB();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/cars', carRoutes);
 
 // Test route
 app.get('/', (req, res) => {
