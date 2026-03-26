@@ -6,8 +6,8 @@ const {
   getMe,
   forgotPassword,
   resetPassword,
-  googleAuth,
-  googleAuthCallback
+  // googleAuth,        // TEMPORARILY COMMENTED OUT
+  // googleAuthCallback // TEMPORARILY COMMENTED OUT
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -17,9 +17,9 @@ router.post('/login', loginUser);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
 
-// Google OAuth routes
-router.get('/google', googleAuth);
-router.get('/google/callback', googleAuthCallback);
+// Google OAuth routes - TEMPORARILY COMMENTED OUT
+// router.get('/google', googleAuth);
+// router.get('/google/callback', googleAuthCallback);
 
 // Private routes
 router.get('/me', protect, getMe);

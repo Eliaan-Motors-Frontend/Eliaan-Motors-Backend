@@ -5,7 +5,8 @@ const crypto = require('crypto');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-// Google OAuth Strategy
+// Google OAuth Strategy - TEMPORARILY COMMENTED OUT
+/*
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -39,6 +40,7 @@ passport.use(new GoogleStrategy({
     }
   }
 ));
+*/
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -226,16 +228,13 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// @desc    Google OAuth Login
-// @route   GET /api/auth/google
-// @access  Public
+// @desc    Google OAuth Login - TEMPORARILY COMMENTED OUT
+/*
 const googleAuth = passport.authenticate('google', {
   scope: ['profile', 'email']
 });
 
-// @desc    Google OAuth Callback
-// @route   GET /api/auth/google/callback
-// @access  Public
+// @desc    Google OAuth Callback - TEMPORARILY COMMENTED OUT
 const googleAuthCallback = (req, res, next) => {
   passport.authenticate('google', { session: false }, (err, user) => {
     if (err || !user) {
@@ -258,6 +257,7 @@ const googleAuthCallback = (req, res, next) => {
     res.redirect(`${process.env.FRONTEND_URL}/auth-success?token=${token}&user=${encodedUser}`);
   })(req, res, next);
 };
+*/
 
 module.exports = {
   registerUser,
@@ -265,6 +265,6 @@ module.exports = {
   getMe,
   forgotPassword,
   resetPassword,
-  googleAuth,
-  googleAuthCallback
+  // googleAuth,        // TEMPORARILY COMMENTED OUT
+  // googleAuthCallback // TEMPORARILY COMMENTED OUT
 };
